@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+  }
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  if (!isGameActive) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  const centerX = (playerPosition.i + 0.5) * cellSize;
+  const centerY = (playerPosition.j + 0.5) * cellSize;
+  const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+  
+  // Increased hit area for easier dragging
+  if (distance <= cellSize) {
+    isDragging = true;
+    trail = [{ x: centerX, y: centerY }]; // Initialize trail
+  }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (!isDragging || !isGameActive) return;
+  
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  if (!checkCollision(x, y)) {
+    const newI = Math.floor(x / cellSize);
+    const newJ = Math.floor(y / cellSize);
+    
+    if (Math.abs(newI - playerPosition.i) <= 1 && Math.abs(newJ - playerPosition.j) <= 1) {
+      playerPosition.i = newI;
+      playerPosition.j = newJ;
+      
+      // Add new position to trail
+      trail.push({ x: x, y: y });
+      if (trail.length > maxTrailLength) {
+        trail.shift();
+      }
+      
+      // Redraw maze and player
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      grid.forEach(cell => cell.show());
+      drawPlayer();
+      
+      if (playerPosition.i === cols - 1 && playerPosition.j === rows - 1) {
+        handleWin();
+      }
+    }
+  }
+});
+
+canvas.addEventListener('mouseout', () => {
+  isDragging = false;
+});
+
+document.getElementById('generateBtn').addEventListener('click', generateMaze);
+document.getElementById('solveBtn').addEventListener('click', solveMaze);
+
+generateMaze();
+</script>
+</body>
+</html>
